@@ -1,0 +1,68 @@
+version: '2.4'
+services:
+  postgres:
+    build:
+      context: postgres/
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    networks:
+      - default
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "9090:8080"
+    networks:
+      - default
+    container_name: adminer
+  sonarqube:
+    build:
+      context: sonarqube/
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    networks:
+      - default
+    container_name: sonarqube
+    environment:
+      - sonar.jdbc.username=sonar
+      - sonar.jdbc.password=sonar
+      - sonar.jdbc.url=jdbc:postgresql://postgres:5432/sonar
+    volumes:
+      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/conf:/opt/sonarqube/conf
+      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/data:/opt/sonarqube/data
+      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/logs:/opt/sonarqube/logs
+      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/extensions:/opt/sonarqube/extensions
+    depends_on:
+      - postgres
+    mem_limit: 4g
+  jenkins:
+    build:
+      context: jenkins/
+    restart: unless-stopped
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    image: localhost:5000/jenkins
+    networks:
+      - default
+    container_name: jenkins
+    volumes:
+      - /D/WInnovator/DockerBuildPipeline/data/jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # Expose the docker daemon in the container
+    depends_on:
+      - sonarqube
+    mem_limit: 4g
+volumes:
+  db-data:
