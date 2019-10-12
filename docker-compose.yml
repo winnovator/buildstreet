@@ -1,11 +1,16 @@
+# PORT FORWARDING
+#
+# 9000  Sonar
+# 9010  Jenkins
+# 9090  Adminer
+# Postgres is not exposed
+
 version: '2.4'
 services:
   postgres:
     build:
       context: postgres/
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     networks:
       - default
     container_name: postgres
@@ -13,7 +18,8 @@ services:
       - POSTGRES_USER=sonar
       - POSTGRES_PASSWORD=sonar
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - winnovator_postgresql:/var/lib/postgresql
+      - winnovator_postgresql_data:/var/lib/postgresql/data
   adminer:
     image: adminer
     restart: unless-stopped
@@ -38,10 +44,9 @@ services:
       - sonar.jdbc.password=sonar
       - sonar.jdbc.url=jdbc:postgresql://postgres:5432/sonar
     volumes:
-      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/conf:/opt/sonarqube/conf
-      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/data:/opt/sonarqube/data
-      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/logs:/opt/sonarqube/logs
-      - /D/WInnovator/DockerBuildPipeline/data/sonarqube/extensions:/opt/sonarqube/extensions
+      - winnovator_sonarqube_conf:/opt/sonarqube/conf
+      - winnovator_sonarqube_data:/opt/sonarqube/data
+      - winnovator_sonarqube_extensions:/opt/sonarqube/extensions
     depends_on:
       - postgres
     mem_limit: 4g
@@ -52,17 +57,20 @@ services:
     privileged: true
     user: root
     ports:
-      - "8080:8080"
-      - "50000:50000"
-    image: localhost:5000/jenkins
+      - "9010:8080"
     networks:
       - default
     container_name: jenkins
     volumes:
-      - /D/WInnovator/DockerBuildPipeline/data/jenkins_home:/var/jenkins_home
+      - winnovator_jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock  # Expose the docker daemon in the container
     depends_on:
       - sonarqube
     mem_limit: 4g
 volumes:
-  db-data:
+  winnovator_sonarqube_conf:
+  winnovator_sonarqube_data:
+  winnovator_sonarqube_extensions:
+  winnovator_postgresql:
+  winnovator_postgresql_data:
+  winnovator_jenkins_home:
