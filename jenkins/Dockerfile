@@ -5,7 +5,7 @@
 
 FROM jenkins/jenkins:latest
 
-RUN /usr/local/bin/install-plugins.sh git mstest matrix-auth workflow-aggregator docker-workflow blueocean credentials-binding
+RUN /usr/local/bin/install-plugins.sh git mstest matrix-auth workflow-aggregator docker-workflow blueocean credentials-binding trilead-api ssh-credentials config-file-provider nodejs
 
 # Setup environment
 ENV SONAR_SCANNER_MSBUILD_VERSION=4.7.1.2311 \
