@@ -3,7 +3,10 @@
 # https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites?tabs=netcore30
 # https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-msbuild/
 
+FROM node as nodejs
+
 FROM jenkins/jenkins:latest
+COPY --from=nodejs /usr/local/bin/node /usr/local/bin/node
 
 RUN /usr/local/bin/install-plugins.sh git mstest matrix-auth workflow-aggregator docker-workflow blueocean credentials-binding trilead-api ssh-credentials config-file-provider nodejs
 
