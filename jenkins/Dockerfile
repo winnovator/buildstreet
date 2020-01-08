@@ -5,9 +5,12 @@
 
 FROM node as nodejs
 
+# Use the latest version of Jenkins
 FROM jenkins/jenkins:latest
+# Copy NodeJS into Jenkins
 COPY --from=nodejs /usr/local/bin/node /usr/local/bin/node
 
+# Install several plugins into Jenkins
 RUN /usr/local/bin/install-plugins.sh git mstest matrix-auth workflow-aggregator docker-workflow blueocean credentials-binding trilead-api ssh-credentials config-file-provider nodejs
 
 # Setup environment
@@ -18,16 +21,16 @@ ENV SONAR_SCANNER_MSBUILD_VERSION=4.7.1.2311 \
     DOTNET_PROJECT_DIR=/project \
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true \
     DOTNET_CLI_TELEMETRY_OPTOUT=true \
-	JENKINS_USER="winnovator" \
-	JENKINS_PASS="G#tXces2thaWInnovator15GR3@tS3cr#ts" \
-	JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    JENKINS_USER="winnovator" \
+    JENKINS_PASS="G#tXces2thaWInnovator15GR3@tS3cr#ts" \
+    JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/
 COPY default-user.groovy /usr/share/jenkins/ref/init.groovy.d/
 
 # DOTNET CORE
 
- # Switch to root to install .NET Core SDK
+# Switch to root to install .NET Core SDK
 USER root
 
 # Just for my sanity... Show me this distro information!
@@ -50,16 +53,14 @@ RUN apt-get install -y dotnet-sdk-$DOTNET_SDK_VERSION && \
 
 # Install the .Net Core framework, set the path, and show the version of core installed.
 RUN apt-get install -y dotnet-sdk-2.1
-	
-RUN wget https://github.com/SonarSource/sonar-scanner-msbuild/releases/download/$SONAR_SCANNER_MSBUILD_VERSION/sonar-scanner-msbuild-$SONAR_SCANNER_MSBUILD_VERSION-netcoreapp2.0.zip -O /opt/sonar-scanner-msbuild.zip \
-  && mkdir -p $SONAR_SCANNER_MSBUILD_HOME \
-  && mkdir -p $DOTNET_PROJECT_DIR \
-  && unzip /opt/sonar-scanner-msbuild.zip -d $SONAR_SCANNER_MSBUILD_HOME \
-  && rm /opt/sonar-scanner-msbuild.zip \
-  && chmod 775 $SONAR_SCANNER_MSBUILD_HOME/**/bin/* \
-  && chmod 775 $SONAR_SCANNER_MSBUILD_HOME/**/lib/*.jar
 
-# ENV PATH="$SONAR_SCANNER_MSBUILD_HOME:$SONAR_SCANNER_MSBUILD_HOME/sonar-scanner-$SONAR_SCANNER_VERSION/bin:${PATH}"
+RUN wget https://github.com/SonarSource/sonar-scanner-msbuild/releases/download/$SONAR_SCANNER_MSBUILD_VERSION/sonar-scanner-msbuild-$SONAR_SCANNER_MSBUILD_VERSION-netcoreapp2.0.zip -O /opt/sonar-scanner-msbuild.zip \
+    && mkdir -p $SONAR_SCANNER_MSBUILD_HOME \
+    && mkdir -p $DOTNET_PROJECT_DIR \
+    && unzip /opt/sonar-scanner-msbuild.zip -d $SONAR_SCANNER_MSBUILD_HOME \
+    && rm /opt/sonar-scanner-msbuild.zip \
+    && chmod 775 $SONAR_SCANNER_MSBUILD_HOME/**/bin/* \
+    && chmod 775 $SONAR_SCANNER_MSBUILD_HOME/**/lib/*.jar
 
 RUN export PATH=$PATH:$SONAR_SCANNER_MSBUILD_HOME
 
